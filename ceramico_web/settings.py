@@ -73,9 +73,10 @@ TEMPLATES = [
     },
 ]
 
+# WSGI
 WSGI_APPLICATION = 'ceramico_web.wsgi.application'
 
-# Base de datos (por ahora SQLite, luego se puede pasar a PostgreSQL en Render)
+# Base de datos (SQLite por ahora, en Render se puede cambiar a PostgreSQL)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
