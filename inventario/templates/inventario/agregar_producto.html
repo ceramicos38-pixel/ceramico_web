@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Agregar Producto</h2>
+  <hr>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <!-- Nombre -->
+    <div class="mb-3">
+      <label class="form-label">Nombre</label>
+      {% render_field form.nombre class="form-control" placeholder="Ej: Cemento Portland" %}
+      {% if form.nombre.errors %}
+        <div class="text-danger small">{{ form.nombre.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Marca -->
+    <div class="mb-3">
+      <label class="form-label">Marca</label>
+      {% render_field form.marca class="form-control" placeholder="Ej: Sol" %}
+      {% if form.marca.errors %}
+        <div class="text-danger small">{{ form.marca.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Categoría -->
+    <div class="mb-3">
+      <label class="form-label">Categoría</label>
+      {% render_field form.categoria class="form-select" %}
+      {% if form.categoria.errors %}
+        <div class="text-danger small">{{ form.categoria.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Cantidad -->
+    <div class="mb-3">
+      <label class="form-label">Cantidad</label>
+      {% render_field form.cantidad class="form-control" %}
+      {% if form.cantidad.errors %}
+        <div class="text-danger small">{{ form.cantidad.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Unidad de Medida -->
+    <div class="mb-3">
+      <label class="form-label">Unidad de Medida</label>
+      {% render_field form.unidad_medida class="form-control" placeholder="Ej: bolsa, caja, unidad" %}
+      {% if form.unidad_medida.errors %}
+        <div class="text-danger small">{{ form.unidad_medida.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Precio Compra -->
+    <div class="mb-3">
+      <label class="form-label">Precio de Compra (S/)</label>
+      {% render_field form.precio_compra class="form-control" %}
+      {% if form.precio_compra.errors %}
+        <div class="text-danger small">{{ form.precio_compra.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- % Ganancia -->
+    <div class="mb-3">
+      <label class="form-label">% Ganancia</label>
+      {% render_field form.porcentaje_ganancia class="form-control" %}
+      {% if form.porcentaje_ganancia.errors %}
+        <div class="text-danger small">{{ form.porcentaje_ganancia.errors }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Botones -->
+    <div class="d-flex justify-content-between">
+      <a href="{% url 'lista_productos' %}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Guardar Producto</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
