@@ -3,7 +3,7 @@ from decimal import Decimal
 import os
 
 # Base del proyecto
-BASE_DIR = Path(__file__).resolve().parent.parent  # ahora es Path, puedes usar /
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Constantes adicionales
 TAX_RATE = Decimal('0.18')   # IGV = 18%
@@ -11,11 +11,19 @@ SMARTCLICK_URL = 'https://your-smartclick-url.example/emit'
 SMARTCLICK_METHOD = 'GET'
 SMARTCLICK_API_KEY = ''
 
-# Clave secreta para desarrollo
-SECRET_KEY = 'evelyn2025'
-DEBUG = False
-ALLOWED_HOSTS = ['EVELYNADMIN.pythonanywhere.com']
+# Clave secreta (⚠️ en producción lo ideal es usar variables de entorno)
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'evelyn2025')
 
+# Debug desactivado en producción
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# Hosts permitidos (Render + PythonAnywhere + local)
+ALLOWED_HOSTS = [
+    'EVELYNADMIN.pythonanywhere.com',
+    '.onrender.com',
+    'localhost',
+    '127.0.0.1'
+]
 
 # Aplicaciones instaladas
 INSTALLED_APPS = [
@@ -30,7 +38,7 @@ INSTALLED_APPS = [
     # tu app
     'inventario',
 
-    # widget tweaks
+    # terceros
     'widget_tweaks',
 ]
 
@@ -48,12 +56,11 @@ MIDDLEWARE = [
 # URLs
 ROOT_URLCONF = 'ceramico_web.urls'
 
-
 # Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # ahora funciona porque BASE_DIR es Path
+        'DIRS': [BASE_DIR / 'templates'],  # carpeta templates en raíz
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -68,7 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ceramico_web.wsgi.application'
 
-# Base de datos
+# Base de datos (por ahora SQLite, luego se puede pasar a PostgreSQL en Render)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -76,14 +83,15 @@ DATABASES = {
     }
 }
 
+# Limite para carga masiva de Excel/CSV
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 # Validación de contraseñas
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # Localización
@@ -92,14 +100,14 @@ TIME_ZONE = 'America/Bogota'
 USE_I18N = True
 USE_TZ = True
 
-# Archivos estáticos
+# Archivos estáticos (CSS, JS, imágenes)
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]  # tus archivos en /static
+STATIC_ROOT = BASE_DIR / "staticfiles"    # carpeta donde se recopilan al hacer collectstatic
 
 # Configuración adicional
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Rutas de login/logout
 LOGIN_URL = '/login/'
-LOGOUT_REDIRECT_URL = '/login/'
 LOGOUT_REDIRECT_URL = '/login/'
