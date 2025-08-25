@@ -1,33 +1,56 @@
 {% extends "base.html" %}
 
-{% block title %}Importar Productos{% endblock %}
+{% block title %}Importar / Exportar Productos{% endblock %}
 
 {% block content %}
-<h2>Importar Productos desde Excel</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Importar y Exportar Productos</h2>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Importar Excel -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">📥 Importar Productos</h5>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="archivo" class="form-label">Selecciona un archivo Excel (.xlsx):</label>
+                            <input type="file" class="form-control" id="archivo" name="archivo" accept=".xlsx" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Importar</button>
+                    </form>
+                    <div class="mt-3 alert alert-info small">
+                        📌 Asegúrate de que cada hoja del archivo Excel tenga el nombre de la categoría 
+                        y que sus columnas sean:<br>
+                        <strong>Nombre, Marca, Categoría, Formato, Precio, Stock, Vendidos, Proveedor</strong><br>
+                        (El nombre de las hojas será tomado como la categoría)
+                    </div>
+                </div>
+            </div>
         </div>
-    {% endfor %}
-{% endif %}
 
-<form method="post" enctype="multipart/form-data" class="mt-4">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="archivo" class="form-label">Selecciona un archivo Excel (.xlsx):</label>
-        <input type="file" class="form-control" id="archivo" name="archivo" accept=".xlsx" required>
+        <!-- Exportar Excel -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">📤 Exportar Productos</h5>
+                    <p class="card-text">Descarga un Excel de tu inventario actual para respaldos o edición masiva.</p>
+                    <a href="{% url 'exportar_excel' %}" class="btn btn-success w-100">Exportar Excel</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Importar</button>
-    <a href="{% url 'lista_productos' %}" class="btn btn-secondary">Volver</a>
-</form>
 
-<div class="mt-4 alert alert-info">
-    📌 Asegúrate de que cada hoja del archivo Excel tenga el nombre de la categoría 
-    y que sus columnas sean:<br>
-    <strong>nombre, marca, cantidad, UM, precio</strong><br>
-    (El nombre de las hojas será tomado como la categoría).
+    <a href="{% url 'lista_productos' %}" class="btn btn-secondary mt-2">Volver a Inventario</a>
 </div>
 {% endblock %}

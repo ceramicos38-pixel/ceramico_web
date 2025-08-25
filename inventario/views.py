@@ -1,5 +1,6 @@
 from decimal import Decimal
 import openpyxl
+from openpyxl.utils import get_column_letter
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -12,7 +13,7 @@ from django.urls import reverse
 from django.utils.timezone import now
 from django.utils import timezone
 from datetime import datetime
-
+from django.http import HttpResponse, JsonResponse
 from .models import Producto, Categoria, Cliente, Sale, SaleItem, Caja
 from .forms import ProductoForm, SaleForm, SaleItemForm, CategoriaForm
 
@@ -20,8 +21,100 @@ from .forms import ProductoForm, SaleForm, SaleItemForm, CategoriaForm
 # DECORADOR ADMIN
 # --------------------------
 def solo_admin(view_func):
-    decorated_view_func = user_passes_test(lambda u: u.is_superuser, login_url='inicio')(view_func)
+    """
+    Permite acceso solo a superusuarios.
+    Redirige a 'inicio' si no es admin.
+    """
+    decorated_view_func = user_passes_test(
+        lambda u: u.is_superuser,
+        login_url='inicio'
+    )(view_func)
     return decorated_view_func
+
+# --------------------------
+# IMPORTAR EXCEL DE PRODUCTOS
+# --------------------------
+@login_required
+@solo_admin
+def importar_excel(request):
+    if request.method == "POST":
+        archivo_excel = request.FILES.get("archivo")
+        if not archivo_excel:
+            messages.error(request, "Por favor, selecciona un archivo Excel.")
+            return redirect("importar_excel")
+        try:
+            Producto.objects.all().delete()  # limpia productos antes de importar
+            workbook = openpyxl.load_workbook(archivo_excel)
+            for hoja in workbook.sheetnames:
+                hoja_excel = workbook[hoja]
+                encabezados = ["Nombre", "Marca", "Categoría", "Formato", "Precio", "Stock", "Vendidos", "Proveedor"]
+                primera_fila = [str(celda.value).strip() if celda.value else "" for celda in next(hoja_excel.iter_rows(min_row=1, max_row=1))]
+                if not all(col in primera_fila for col in encabezados):
+                    messages.error(request, f"La hoja {hoja} no tiene el formato esperado.")
+                    continue
+                idx = {col: primera_fila.index(col) for col in encabezados}
+                for fila in hoja_excel.iter_rows(min_row=2, values_only=True):
+                    if not fila[idx["Nombre"]]:
+                        continue
+                    nombre = fila[idx["Nombre"]]
+                    marca = fila[idx["Marca"]] or ""
+                    categoria_nombre = fila[idx["Categoría"]] or hoja.strip()
+                    unidad_medida = fila[idx["Formato"]] or "unidad"
+                    precio_venta = fila[idx["Precio"]] or 0
+                    stock = fila[idx["Stock"]] or 0
+                    vendidos = fila[idx["Vendidos"]] or 0
+                    proveedor = fila[idx["Proveedor"]] or ""
+                    categoria_obj, _ = Categoria.objects.get_or_create(nombre=categoria_nombre.strip().upper())
+                    Producto.objects.create(
+                        nombre=nombre,
+                        marca=marca,
+                        categoria=categoria_obj,
+                        stock=stock,
+                        unidad_medida=unidad_medida,
+                        precio_venta=precio_venta,
+                        vendidos=vendidos,
+                        proveedor=proveedor
+                    )
+            messages.success(request, "Productos importados correctamente.")
+            return redirect("lista_productos")
+        except Exception as e:
+            messages.error(request, f"Error al importar: {str(e)}")
+            return redirect("importar_excel")
+    return render(request, "inventario/importar_excel.html")
+
+# --------------------------
+# EXPORTAR EXCEL DE PRODUCTOS
+# --------------------------
+@login_required
+@solo_admin
+def exportar_excel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Inventario"
+    encabezados = ["Nombre", "Marca", "Categoría", "Formato", "Precio", "Stock", "Vendidos", "Proveedor"]
+    ws.append(encabezados)
+
+    for producto in Producto.objects.all():
+        fila = [
+            producto.nombre,
+            producto.marca,
+            producto.categoria.nombre if producto.categoria else "",
+            producto.unidad_medida,
+            float(producto.precio_venta),
+            float(producto.stock),
+            float(producto.vendidos),
+            producto.proveedor or "",
+        ]
+        ws.append(fila)
+
+    for i, col in enumerate(ws.columns, 1):
+        max_length = max(len(str(cell.value)) for cell in col)
+        ws.column_dimensions[get_column_letter(i)].width = max_length + 2
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = 'attachment; filename=Inventario.xlsx'
+    wb.save(response)
+    return response
 
 # --------------------------
 # HISTORIAL DE CAJA
@@ -63,62 +156,6 @@ def login_view(request):
     return render(request, "inventario/login.html", {"form": form})
 
 # --------------------------
-# IMPORTAR EXCEL DE PRODUCTOS
-# --------------------------
-@login_required
-@solo_admin
-def importar_excel(request):
-    if request.method == "POST":
-        archivo_excel = request.FILES.get("archivo")
-        if not archivo_excel:
-            messages.error(request, "Por favor, selecciona un archivo Excel.")
-            return redirect("importar_excel")
-        try:
-            Producto.objects.all().delete()
-            workbook = openpyxl.load_workbook(archivo_excel)
-            for hoja in workbook.sheetnames:
-                hoja_excel = workbook[hoja]
-                encabezados = ["Nombre", "Marca", "Categoría", "Formato", "Precio", "Stock", "Vendidos", "Proveedor"]
-                primera_fila = [str(celda.value).strip() if celda.value else "" for celda in next(hoja_excel.iter_rows(min_row=1, max_row=1))]
-                if not all(col in primera_fila for col in encabezados):
-                    messages.error(request, f"La hoja {hoja} no tiene el formato esperado.")
-                    continue
-                idx = {col: primera_fila.index(col) for col in encabezados}
-                for fila in hoja_excel.iter_rows(min_row=2, values_only=True):
-                    if not fila[idx["Nombre"]] or not fila[idx["Marca"]]:
-                        continue
-                    nombre = fila[idx["Nombre"]]
-                    marca = fila[idx["Marca"]]
-                    categoria_nombre = fila[idx["Categoría"]] or hoja.strip()
-                    formato = fila[idx["Formato"]] or ""
-                    precio = fila[idx["Precio"]] or 0
-                    stock = fila[idx["Stock"]] or 0
-                    vendidos = fila[idx["Vendidos"]] or 0
-                    proveedor = fila[idx["Proveedor"]] or ""
-                    categoria_obj, _ = Categoria.objects.get_or_create(nombre=categoria_nombre.strip().upper())
-                    Producto.objects.create(
-                        nombre=nombre,
-                        marca=marca,
-                        categoria=categoria_obj,
-                        stock=stock,
-                        unidad_medida=formato,
-                        precio_venta=precio,
-                        precio_compra=0,
-                        porcentaje_ganancia=30,
-                        vendidos=vendidos,
-                        proveedor=proveedor
-                    )
-            for cat in Categoria.objects.all():
-                if not Producto.objects.filter(categoria=cat).exists():
-                    cat.delete()
-            messages.success(request, "Productos importados correctamente con el nuevo formato.")
-            return redirect("lista_productos")
-        except Exception as e:
-            messages.error(request, f"Error al importar: {str(e)}")
-            return redirect("importar_excel")
-    return render(request, "inventario/importar_excel.html")
-
-# --------------------------
 # LISTA DE PRODUCTOS
 # --------------------------
 @login_required
@@ -142,7 +179,7 @@ def lista_productos(request):
         for p in productos_categoria:
             stock = p.stock or 0
             precio_venta = p.precio_venta or 0
-            total_inversion = precio_venta * stock   # ahora solo se usa precio de venta
+            total_inversion = precio_venta * stock
             productos_list.append({
                 'obj': p,
                 'total_inversion': total_inversion,
@@ -169,7 +206,6 @@ def lista_productos(request):
         'categoria_form': categoria_form,
     }
     return render(request, 'inventario/lista_productos.html', context)
-
 
 # --------------------------
 # API PRODUCTO
