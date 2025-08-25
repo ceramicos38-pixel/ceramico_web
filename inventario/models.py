@@ -56,36 +56,24 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=200)
     marca = models.CharField(max_length=200, blank=True)
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    stock = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # antes "cantidad"
+    stock = models.DecimalField(max_digits=10, decimal_places=2, default=0)  
     unidad_medida = models.CharField(max_length=20, choices=UNIDADES, default="caja")
-    precio_compra = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     precio_venta = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    porcentaje_ganancia = models.DecimalField(max_digits=5, decimal_places=2, default=30)
-    total_inversion = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    ganancia = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     vendidos = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     proveedor = models.CharField(max_length=255, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.precio_compra = Decimal(self.precio_compra or 0)
-        self.porcentaje_ganancia = Decimal(self.porcentaje_ganancia or 0)
+        # Nos aseguramos que los decimales estén limpios
+        self.precio_venta = Decimal(self.precio_venta or 0)
         self.stock = Decimal(self.stock or 0)
         self.vendidos = Decimal(self.vendidos or 0)
 
-        # Calcular precio de venta con ganancia
-        if self.precio_compra > 0:
-            self.precio_venta = self.precio_compra * (1 + self.porcentaje_ganancia / Decimal(100))
-        else:
-            self.precio_venta = Decimal(0)
-
-        # Inversión y ganancia esperada
-        self.total_inversion = self.stock * self.precio_compra
-        self.ganancia = self.stock * (self.precio_venta - self.precio_compra)
-
+        # Ya no calculamos nada extra (sin ganancia, sin inversión)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.nombre} ({self.marca}) - {self.stock} {self.unidad_medida}"
+
 
 
 # ========================

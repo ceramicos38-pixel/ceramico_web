@@ -125,7 +125,6 @@ def importar_excel(request):
 def lista_productos(request):
     query = request.GET.get('q', '')
     categorias = Categoria.objects.all().order_by("nombre")
-    valor_total_inventario = 0
     productos_por_categoria = {}
 
     if request.method == "POST" and 'nueva_categoria' in request.POST and request.user.is_superuser:
@@ -141,18 +140,12 @@ def lista_productos(request):
         productos_categoria = Producto.objects.filter(categoria=categoria).order_by("nombre")
         productos_list = []
         for p in productos_categoria:
-            precio_compra = p.precio_compra or 0
-            precio_venta = p.precio_venta or 0
             stock = p.stock or 0
-            total_inversion = precio_compra * stock
-            ganancia = (precio_venta - precio_compra) * stock
-            porcentaje_ganancia = ((precio_venta - precio_compra) / precio_compra * 100) if precio_compra > 0 else 0
-            valor_total_inventario += total_inversion
+            precio_venta = p.precio_venta or 0
+            total_inversion = precio_venta * stock   # ahora solo se usa precio de venta
             productos_list.append({
                 'obj': p,
                 'total_inversion': total_inversion,
-                'ganancia': ganancia,
-                'porcentaje_ganancia': porcentaje_ganancia,
             })
         productos_por_categoria[categoria] = productos_list
 
@@ -160,28 +153,23 @@ def lista_productos(request):
     if query:
         qs = Producto.objects.filter(Q(nombre__icontains=query) | Q(marca__icontains=query))
         for p in qs:
-            precio_compra = p.precio_compra or 0
-            precio_venta = p.precio_venta or 0
             stock = p.stock or 0
-            total_inversion = precio_compra * stock
-            ganancia = (precio_venta - precio_compra) * stock
-            porcentaje_ganancia = ((precio_venta - precio_compra) / precio_compra * 100) if precio_compra > 0 else 0
+            precio_venta = p.precio_venta or 0
+            total_inversion = precio_venta * stock
             productos_filtrados.append({
                 'obj': p,
                 'total_inversion': total_inversion,
-                'ganancia': ganancia,
-                'porcentaje_ganancia': porcentaje_ganancia,
             })
 
     context = {
         'categorias': categorias,
         'productos_por_categoria': productos_por_categoria,
-        'valor_total_inventario': valor_total_inventario,
         'query': query,
         'productos_filtrados': productos_filtrados,
         'categoria_form': categoria_form,
     }
     return render(request, 'inventario/lista_productos.html', context)
+
 
 # --------------------------
 # API PRODUCTO

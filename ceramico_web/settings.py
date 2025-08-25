@@ -15,7 +15,7 @@ SMARTCLICK_API_KEY = ''
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'evelyn2025')
 
 # Debug desactivado en producción
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = 'True'
 
 # Hosts permitidos (Render + PythonAnywhere + local)
 ALLOWED_HOSTS = [

@@ -8,23 +8,46 @@ from decimal import Decimal
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        # Solo estos campos se mostrarán en el formulario
-        fields = ['nombre', 'marca', 'categoria', 'stock', 'precio_compra', 'precio_venta']
+        # ✅ Solo dejamos los campos que realmente existen en el modelo
+        fields = ['nombre', 'marca', 'categoria', 'stock', 'unidad_medida', 'precio_venta', 'proveedor']
         labels = {
             'nombre': 'Nombre',
             'marca': 'Marca',
             'categoria': 'Categoría',
             'stock': 'Stock',
-            'precio_compra': 'Precio de Compra (S/)',
+            'unidad_medida': 'U.M.',
             'precio_venta': 'Precio de Venta (S/)',
+            'proveedor': 'Proveedor',
         }
         widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Cemento Portland'}),
-            'marca': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Sol'}),
-            'categoria': forms.Select(attrs={'class': 'form-control'}),
-            'stock': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '1'}),
-            'precio_compra': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
-            'precio_venta': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+            'nombre': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Cemento Portland'
+            }),
+            'marca': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Sol'
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'stock': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'step': '1'
+            }),
+            'unidad_medida': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'precio_venta': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'step': '0.01'
+            }),
+            'proveedor': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Ferretería San Juan'
+            }),
         }
 
 # --------------------------
