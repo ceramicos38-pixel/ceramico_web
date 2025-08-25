@@ -104,7 +104,7 @@ USE_TZ = True
 
 # Archivos estáticos (CSS, JS, imágenes)
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]  # tus archivos en /static
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")] # tus archivos en /static
 STATIC_ROOT = BASE_DIR / "staticfiles"    # carpeta donde se recopilan al hacer collectstatic
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 

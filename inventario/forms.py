@@ -6,27 +6,26 @@ from decimal import Decimal
 # FORMULARIO PRODUCTO
 # --------------------------
 class ProductoForm(forms.ModelForm):
-    nueva_categoria = forms.CharField(
-        max_length=120,
-        required=False,
-        label="Nueva Categoría",
-        help_text="Escribe un nombre si quieres crear una categoría nueva"
-    )
-
     class Meta:
         model = Producto
-        fields = [
-            'nombre',
-            'marca',
-            'categoria',
-            'nueva_categoria',  # NUEVO CAMPO
-            'stock',
-            'unidad_medida',
-            'precio_compra',
-            'porcentaje_ganancia',
-            'vendidos',
-            'proveedor',
-        ]
+        # Solo estos campos se mostrarán en el formulario
+        fields = ['nombre', 'marca', 'categoria', 'stock', 'precio_compra', 'precio_venta']
+        labels = {
+            'nombre': 'Nombre',
+            'marca': 'Marca',
+            'categoria': 'Categoría',
+            'stock': 'Stock',
+            'precio_compra': 'Precio de Compra (S/)',
+            'precio_venta': 'Precio de Venta (S/)',
+        }
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Cemento Portland'}),
+            'marca': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Sol'}),
+            'categoria': forms.Select(attrs={'class': 'form-control'}),
+            'stock': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '1'}),
+            'precio_compra': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+            'precio_venta': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+        }
 
 # --------------------------
 # FORMULARIO VENTA

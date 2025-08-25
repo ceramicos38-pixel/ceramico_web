@@ -37,21 +37,12 @@
       {% endif %}
     </div>
 
-    <!-- Cantidad -->
+    <!-- Stock -->
     <div class="mb-3">
-      <label class="form-label">Cantidad</label>
-      {% render_field form.cantidad class="form-control" %}
-      {% if form.cantidad.errors %}
-        <div class="text-danger small">{{ form.cantidad.errors }}</div>
-      {% endif %}
-    </div>
-
-    <!-- Unidad de Medida -->
-    <div class="mb-3">
-      <label class="form-label">Unidad de Medida</label>
-      {% render_field form.unidad_medida class="form-control" placeholder="Ej: bolsa, caja, unidad" %}
-      {% if form.unidad_medida.errors %}
-        <div class="text-danger small">{{ form.unidad_medida.errors }}</div>
+      <label class="form-label">Stock</label>
+      {% render_field form.stock class="form-control" %}
+      {% if form.stock.errors %}
+        <div class="text-danger small">{{ form.stock.errors }}</div>
       {% endif %}
     </div>
 
@@ -64,12 +55,12 @@
       {% endif %}
     </div>
 
-    <!-- % Ganancia -->
+    <!-- Precio Venta -->
     <div class="mb-3">
-      <label class="form-label">% Ganancia</label>
-      {% render_field form.porcentaje_ganancia class="form-control" %}
-      {% if form.porcentaje_ganancia.errors %}
-        <div class="text-danger small">{{ form.porcentaje_ganancia.errors }}</div>
+      <label class="form-label">Precio de Venta (S/)</label>
+      {% render_field form.precio_venta class="form-control" %}
+      {% if form.precio_venta.errors %}
+        <div class="text-danger small">{{ form.precio_venta.errors }}</div>
       {% endif %}
     </div>
 
